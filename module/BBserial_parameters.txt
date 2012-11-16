@@ -1,0 +1,152 @@
+Templates
+	Bus5							-	contains all PCI templates.
+		ComBaseAddressAlignment		-	always 8 for UART COM ports. This value has only got to be there,
+										when nComPorts is not 0.
+		LptBaseAddressAlignment		-	always 4 for UART LPT ports. This value has only got to be there,
+										when nLptPorts is not 0.
+		ClockFrequency				-	clock frequency in Hz
+		ClockFrequencyAdjustment	-	value which adjusts the clock frequency by dividing or
+										multiplying with the given value. Default is 1, which
+										does not chage the clock frequency. If the value is 0,
+										the driver defaults it to 1. Any other positive value
+										is the multiplyer for the clock frequency. Any other
+										negative value is made positive, and then the clock
+										frequency gets divided by this value.
+		Description			- 	Whatever you want call it (For example "Steve")
+		DeviceID			-	Device ID of the card, including the correct Revision ID
+		nComPorts			-	Number of COM ports on the card
+		nLptPorts			-	Number of LPT ports on the card
+		VendorID			-	...
+
+		PlxBaudClockType	-	If a card contains a Baud Clock register on the PLX chip, 
+								then this value has to be set. Possible values are :
+									0	-	no Baud Clock is on the card. This causes the 
+											following two Plx.. values to be ignored.
+									1	-	Baud Clock as i.e. on cards with device ID 42, 81, 
+											101, 121 or 161 ...
+									2	-	Baud Clock as i.e. on cards with device ID E1 ...
+									3	-	Baud Clock as i.e. on cards with device ID A0 ...
+									4	-	ISA only
+									5	-	PCMCIA only
+									6	-	PCI only
+									7	-	PCMCIA only
+									8	-	PCI - Similar to 3, only for 4 ports.
+									9	-	PCI as i.e. on cards with device ID 280.
+								For 1 and 2, PlxBaudClockDivisor and PlxBaudClockOffset have 
+								to be present. For 3, only PlxBaudClockDivisor has to be 
+								there. In addition to this the values DuplexOperation and 
+								CtsTrue have to be present for 3.
+								For all except 0, MaximumBaudrate must be present.
+		PlxBaudClockDivisor	-	Gives the divisor which should be selected by default. Possible
+								values are : 1, 2, 4 and 8.
+		PlxBaudClockOffset	-	Gives the offset for the PLX register(s) from the beginning of
+								the PLX chip address range in I/O space.
+		MaximumBaudrate		-	The maximum baudrate which the card supports by specification.
+		DuplexOperation		-	0	-	RS485 half-duplex autogating mode
+								1	-	RS485 half-duplex Rx/Tx state set by RTS line
+								4	-	Tx and Rx both disabled
+								5	-	Tx enabled, Rx disabled (RS485 half-duplex manual)
+								6	-	Tx disabled, Rx enabled (RS485 half-duplex manual)
+								7	-	full-duplex
+		CtsTrue				-	If 0, CTS reflects the state of the CTS line receiver.
+								If 1, CTS is held TRUE
+		RxTriggerLevel	-	Receive Trigger Level for 950 chips. (not yet implemented) Range 1-100
+							As an extra feature, if both, RxTriggerLevel and TxTriggerLevel, are 
+							set to 0, the FIFOs are disabled. If the value is not there, the default
+							is set to 100 by the driver.
+		TxTriggerLevel	-	Transmit Trigger Level for 950 chips. (not yet implemented) Range 1-100
+							As an extra feature, if both, RxTriggerLevel and TxTriggerLevel, are 
+							set to 0, the FIFOs are disabled. If the value is not there, the default
+							is set to 1 by the driver. 
+		SoftTxLimit		-	The amount of characters transmitted on each TX empty interrupt 
+							in percent. The allowed range is 1 to 100. Setting it to 1 garanties
+							that only 1 byte at a time is written to the FIFO. Setting it to 100 
+							garanties, that the FIFO is filled up to its maximum on transmit.
+							The default, if the value is not present in, is 100.
+		UartType		-	This value should normally not be there. The Control Panel does
+							not need to update this value. It only exists for debugging purposes,
+							to overwrite the UART class to be installed on a port. For example :
+							when the card has 950 on it. Setting this value to 5, forces the 
+							driver to use only 550 support. Possible value are :
+							4	-	450 UART
+							5	-	550	UART
+							7	-	750 UART
+							9	-	950 UART
+		AlwaysUsePortSpaceAccess  -		If this value is set to 1, the port driver is forced to
+										access the card through port address space, no matter if
+										the card would support memory space access. Nothing can overwirte
+										this value, when set to 1. If it is not 1, it is ignored.
+
+
+
+
+Parameters					-	contains all parameter informationfor the cards
+	Bus5					-	contains all PCI parameters
+		CardX				-	contains all parameters for 1 card. The card keys must be consecutive 
+								order, based on 1
+			DeviceID		-	Device ID of the card, including the correct Revision ID
+			VendorID		-	...
+			nBus			- 	Bus number where the device was found. The information is transferred
+								from the corresponding value from CurrentConfig
+			nSlot			- 	Slot number where the device was found. The information is 
+								transferred from the corresponding value from CurrentConfig
+			PlxBaudClockDivisor	-	Gives the divisor values for the PLX Baud Clock. This value
+									overwrites the Templates setting. Possible values are : 1, 2, 
+									4 and 8. This Baud Clock Divisor can only be present for cards 
+									with Baud Clock registers working on a per-card basis. This are 
+									cards with PlxBaudClockType set to 1 or 2.
+			AlwaysUsePortSpaceAccess  -		If this value is set to 1, the port driver is forced to
+											access the card through port address space, no matter if
+											the card would support memory space access. If it is not 1,
+											it is ignored.
+
+			ComPortX		- 	COM port key. The X values must be consecutive and 1 based. (If for 
+								example parameters should be added to ComPort3, then the ComPort 
+								keys 1 and 2 need to be created, but do not need to contain 
+								parameters
+				RxTriggerLevel	-	Receive Trigger Level for 950 chips. (not yet implemented) Range 1-100
+									As an extra feature, if both, RxTriggerLevel and TxTriggerLevel, are 
+									set to 0, the FIFOs are disabled. If present, this value overwrites
+									those set under Templates.
+				TxTriggerLevel	-	Transmit Trigger Level for 950 chips. (not yet implemented) Range 1-100
+									As an extra feature, if both, RxTriggerLevel and TxTriggerLevel, are 
+									set to 0, the FIFOs are disabled. If present, this value overwrites
+									those set under Templates.
+				SoftTxLimit		-	The amount of characters transmitted on each TX empty interrupt 
+									in percent. The allowed range is 1 to 100. Setting it to 1 garanties
+									that only 1 byte at a time is written to the FIFO. Setting it to 100 
+									garanties, that the FIFO is filled up to its maximum on transmit.
+									The default, if the value is not present in Parameters, is 100 for all
+									card with other than 750 or 950 chips. On 750 or 950 cards, the default
+									is 24, to pass the HCT tests under standard configuration.
+									As soon as the Parameters key for a card is present, the default changes 
+									to 100 automatically!! If present, this value overwrites
+									those set under Templates.
+				PlxBaudClockDivisor	-	Gives the divisor values for the PLX Baud Clock. This value
+										overwrites the Templates setting. Possible values are : 1, 2, 
+										4 and 8. This Baud Clock Divisor can only be present for cards with Baud Clock
+										registers working on a per-port basis. This are cards with
+										PlxBaudClockType set to 3.
+				DuplexOperation		-	0	-	RS485 half-duplex autogating mode
+										1	-	RS485 half-duplex Rx/Tx state set by RTS line
+										4	-	Tx and Rx both disabled
+										5	-	Tx enabled, Rx disabled (RS485 half-duplex manual)
+										6	-	Tx disabled, Rx enabled (RS485 half-duplex manual)
+										7	-	full-duplex
+										These value overwrites the Templates settings.
+				CtsTrue				-	If 0, CTS reflects the state of the CTS line receiver.
+										If 1, CTS is held TRUE
+										These value overwrites the Templates settings.
+				UartType		-	This value should normally not be there. The Control Panel does
+									not need to update this value. It only exists for debugging purposes,
+									to overwrite the UART class to be installed on a port. For example :
+									when the card has 950 on it. Setting this value to 5, forces the 
+									driver to use only 550 support. If present, this value overwrites
+									those set under Templates. Possible value are :
+									4	-	450 UART
+									5	-	550	UART
+									7	-	750 UART
+									9	-	950 UART
+				NoSleepMode		-	If this value is not present (default) or is set to 0, the UART chip
+									goes automatically into sleep mode when idle. Setting this value to 
+

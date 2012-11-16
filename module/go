@@ -1,0 +1,5 @@
+#!/bin/bash
+make clean
+make
+rmmod bbserial
+insmod ./bbserial.ko

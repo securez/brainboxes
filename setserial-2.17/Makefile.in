@@ -1,0 +1,82 @@
+# setserial.mk - makefile for setserial - rick sladkey
+# modified by Michael K. Johnson, johnsonm@stolaf.edu
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+VERSION = @RELEASE_VERSION@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+STRIP = @STRIP@
+
+CC = @CC@
+RM = rm -f
+CFLAGS = @CFLAGS@
+DEFS = @DEFS@
+INCS = -I.
+TAR = tar
+
+all: bbsetserial bbsetserial.cat
+
+bbsetserial: bbsetserial.c
+	$(CC) $(CFLAGS) $(DEFS) $(INCS) bbsetserial.c -o bbsetserial
+
+bbsetserial.cat: bbsetserial.8
+	nroff -man bbsetserial.8 > bbsetserial.cat
+
+install: bbsetserial bbsetserial.8
+	$(INSTALL_PROGRAM) bbsetserial $(DESTDIR)/bin
+	$(STRIP) $(DESTDIR)/bin/bbsetserial
+	$(INSTALL_DATA) bbsetserial.8 $(DESTDIR)/usr/man/man8
+
+clean:
+	$(RM) bbsetserial bbsetserial.o bbsetserial.cat *~
+
+distclean: clean
+	$(RM) config.status config.log config.cache MCONFIG Makefile \
+		bbsetserial.8
+
+realclean: distclean
+	$(RM) configure
+
+SRCROOT = `echo setserial-$(VERSION) | sed -e 's/-WIP//' \
+			-e 's/pre-//' -e 's/-PLUS//'`
+
+$(srcdir)/.exclude-file:
+	a=$(SRCROOT); \
+	(cd $(srcdir)/.. ; find setserial \( -name \*~ -o -name \*.orig \
+		-o -name CVS -o -name \*.rej \) -print) \
+		| sed -e "s/setserial/$$a/" > $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/Makefile" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/Attic" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/config.log" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/config.cache" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/config.status" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/bbsetserial" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/bbsetserial.cat" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/bbsetserial.o" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
+	echo $(SRCROOT)/e2fsprogs-$(VERSION).tar.gz \
+		>> $(srcdir)/.exclude-file
+	
+source_tar_file: $(srcdir)/.exclude-file
+	(cd $(srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf bbsetserial $$a ; \
+		$(TAR) -c -h -v -f - \
+			-X $$a/.exclude-file $$a | \
+		gzip -9 > bbsetserial-$(VERSION).tar.gz)
+	rm -f $(srcdir)/.exclude-file $(srcdir)/../bbsetserial-$(VERSION)
+
+${srcdir}/configure: configure.in # aclocal.m4
+	cd ${srcdir} && autoconf
+
+Makefile: Makefile.in config.status
+	CONFIG_FILES=Makefile ./config.status
+
+setserial.8: bbsetserial.8.in config.status
+	CONFIG_FILES=bbsetserial.8 ./config.status
+     
+config.status: configure
+	./config.status --recheck

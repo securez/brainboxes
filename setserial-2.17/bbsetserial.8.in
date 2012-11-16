@@ -1,0 +1,288 @@
+.\" Copyright 1992, 1993 Rickard E. Faith (faith@cs.unc.edu)
+.\" May be distributed under the GNU General Public License
+.\" Portions of this text are from the README in setserial-2.01.tar.z,
+.\" but I can't figure out who wrote that document.  If anyone knows,
+.\" please tell me
+.\"
+.\" [tytso:19940519.2239EDT]  I did... - Ted Ts'o (tytso@mit.edu)
+.\"
+.TH BBSETSERIAL 8 "@RELEASE_MONTH@ @RELEASE_YEAR@" "Setserial @RELEASE_VERSION@
+.SH NAME
+bbsetserial \- get/set Linux serial port information
+.SH SYNOPSIS
+.B bbsetserial
+.B "[ \-abqvVWz ]"
+device
+.BR "[ " parameter1 " [ " arg " ] ] ..."
+
+.B "bbsetserial -g"
+.B "[ \-abGv ]"
+device1 ...
+.SH DESCRIPTION
+.B bbsetserial
+is a program designed to set and/or report the configuration information
+associated with a serial port.  This information includes whether or not the
+break key should be interpreted as the Secure Attention Key, and so
+on.
+
+During the normal bootup process, in order
+to initialize any additional serial ports, the
+.B bbsetserial 
+program should be used.  Typically it is called from an
+.I bbserial
+script, which is usually run out of 
+.IR /etc/init.d .
+
+The
+.I device
+argument or arguments specifies the serial device which should be configured or
+interrogated.  It will usually have the following form:
+.BR /dev/ttyB[0-3] .
+
+If no parameters are specified,
+.B bbsetserial
+will print out the port type (i.e., 8250, 16450, 16550, 16550A, etc.), the
+hardware I/O port, the hardware IRQ line, its "baud base," and some of
+its operational flags.
+
+If the
+.B \-g
+option is given, the arguments to bbsetserial are interpreted as a list
+of devices for which the characteristics of those devices should be
+printed.  
+
+Without the 
+.B \-g
+option, the first argument to bbsetserial is interpreted as the device
+to be modified or characteristics to be printed, and any additional
+arguments are interpreted as parameters which should be assigned
+to that serial device.
+
+For the most part, superuser privilege is required to set the
+configuration parameters of a serial port.  A few serial port parameters
+can be set by normal users, however, and these will be noted as
+exceptions in this manual page.
+
+.SH OPTIONS
+.B Bbetserial
+accepts the following options:
+
+.TP
+.B \-a
+When reporting the configuration of a serial device, print all
+available information.
+.TP
+.B \-b
+When reporting the configuration of a serial device, print a summary
+of the device's configuration, which might be suitable for printing
+during the bootup process, during the /etc/rc script.
+.TP
+.B \-G
+Print out the configuration information of the serial port in a form which
+can be fed back to bbsetserial as command-line arguments.
+.TP
+.B \-q
+Be quiet.  
+.B Bbsetserial
+will print fewer lines of output.
+.TP
+.B \-v
+Be verbose.
+.B Bbsetserial
+will print additional status output.
+.TP
+.B \-V
+Display version and exit.
+.TP
+.B \-W
+Do wild interrupt initialization and exit.  This option is no longer 
+relevant in Linux kernels after version 2.1.
+.TP
+.B \-z
+Zero out the serial flags before starting to set flags.  This is related
+to the automatic saving of serial flags using the \-G flag.
+
+.SH PARAMETERS
+The following parameters can be assigned to a serial port.
+
+All argument values are assumed to be in decimal unless preceeded by "0x".
+
+.TP
+.B skip_test
+During autoconfiguration, skip the UART test.  Some internal modems do
+not have National Semiconductor compatible UART's, but have cheap
+imitations instead.  Some of these cheasy imitations UART's do not
+fully support the loopback detection mode, which is used by the kernel
+to make sure there really is a UART at a particular address before
+attempting to configure it.  So for certain internal modems you will
+need to specify this parameter so Linux can initialize the UART
+correctly.
+.TP
+.B ^skip_test
+During autoconfiguration, do
+.I not
+skip the UART test.
+.TP
+.B
+spd_hi
+Use 57.6kb when the application requests 38.4kb.  
+This parameter may be specified by a non-privileged user.
+.TP
+.B spd_vhi
+Use 115kb when the application requests 38.4kb.
+This parameter may be specified by a non-privileged user.
+.TP
+.B spd_shi
+Use 230kb when the application requests 38.4kb.
+This parameter may be specified by a non-privileged user.
+.TP
+.B spd_warp
+Use 460kb when the application requests 38.4kb.
+This parameter may be specified by a non-privileged user.
+.TP
+.B spd_cust
+Use the custom divisor to set the speed when the application requests
+38.4kb.  In this case, the baud rate is the
+.B baud_base
+divided by the
+.BR divisor .
+This parameter may be specified by a non-privileged user.
+.TP
+.B spd_normal
+Use 38.4kb when the application requests 38.4kb.
+This parameter may be specified by a non-privileged user.
+.TP
+.B sak
+Set the break key at the Secure Attention Key.
+.TP
+.B ^sak
+disable the Secure Attention Key.
+.TP
+.BR close_delay " delay"
+Specify the amount of time, in hundredths of a second, that DTR should
+remain low on a serial line after the callout device is closed, before
+the blocked dialin device raises DTR again.  The default value of this
+option is 50, or a half-second delay.
+.TP
+.BR closing_wait " delay"
+Specify the amount of time, in hundredths of a second, that the kernel
+should wait for data to be transmitted from the serial port while
+closing the port.  If "none" is
+specified, no delay will occur. If "infinite" is specified the kernel 
+will wait indefinitely  for the buffered data to be transmitted.  
+The default setting is 3000 or 30 seconds of delay.  
+This default is generally appropriate for most devices.  If too long 
+a delay is selected, then
+the serial port may hang for a long time if when a serial port which
+is not connected, and has data pending, is closed.  If too short a
+delay is selected, then there is a risk that some of the transmitted
+data is output at all.  If the device is extremely slow, like a plotter, 
+the closing_wait may need to be larger.  
+.TP
+.B session_lockout
+Lock out callout port (/dev/cuaXX) accesses across different sessions.
+That is, once a process has opened a port, do not allow a process with
+a different session ID to open that port until the first process has
+closed it.
+.TP
+.B ^session_lockout
+Do not lock out callout port accesses across different sessions.
+.TP
+.B pgrp_lockout
+Lock out callout port (/dev/cuaXX) accesses across different process groups.
+That is, once a process has opened a port, do not allow a process in a
+different process group to open that port until the first process has
+closed it.
+.TP
+.B ^pgrp_lockout
+Do not lock out callout port accesses across different process groups.
+.TP
+.B hup_notify
+Notify a process blocked on opening a dial in line when a process has
+finished using a callout line (either by closing it or by the serial
+line being hung up) by returning EAGAIN to the open.  
+
+The application of this parameter is for getty's which are blocked on
+a serial port's dial in line.  This allows the getty to reset the
+modem (which may have had its configuration modified by the
+application using the callout device) before blocking on the open again.
+.TP
+.B ^hup_notify
+Do not notify a process blocked on opening a dial in line when the
+callout device is hung up.
+.TP
+.B split_termios
+Treat the termios settings used by the callout device and the termios
+settings used by the dialin devices as separate.  
+.TP
+.B ^split_termios
+Use the same termios structure to store both the dialin and callout
+ports.  This is the default option.
+.TP
+.B callout_nohup
+If this particular serial port is opened as a callout device, do not
+hangup the tty when carrier detect is dropped.
+.TP
+.B ^callout_nohup
+Do not skip hanging up the tty when a serial port is opened as a
+callout device.  Of course, the HUPCL termios flag must be enabled if
+the hangup is to occur.
+.TP
+.B low_latency
+Minimize the receive latency of the serial device at the cost of
+greater CPU utilization.  (Normally there is an average of 5-10ms
+latency before characters are handed off to the line discpline to
+minimize overhead.)  This is off by default, but certain real-time
+applications may find this useful.
+.TP
+.B ^low_latency
+Optimize for efficient CPU processing of serial characters at the cost of 
+paying an average of 5-10ms of latency before the characters are processed.
+This is the default.
+
+.SH Brain Boxes Configuration
+.B Bbsetserial
+may also be used to configure ports on a Brain Boxes serial board.
+.PP
+The following parameters when configuring Brain Boxes ports:
+.TP
+.B rx_trigger
+(not implemented yet). 
+.TP
+.B tx_trigger
+(not implemented yet).
+.TP
+.B afc_trigger
+This is Automatic Flow Control level. Valid values are 1 through 100.
+.TP
+.B duplex_mode
+This is duplex operation of the port. Valid values are:
+   0 - RS485 half-duplex autogating mode.
+   1 - RS485 half-duplex Rx/Tx state set by RTS line
+   4 - Tx and Rx both disabled
+   5 - Tx enabled, Rx disabled (RS485 half-duplex manual)
+   6 - Tx disabled, Rx enabled (RS485 half-duplex manual)
+   7 - Full-duplex
+.TP 
+.B cts_true
+This is if CTS is held. Valid values are:
+   If 0, CTS reflects the state of the CTS line receiver.
+   If 1, CTS is held TRUE
+
+.SH FILES
+.BR /etc/init.d/bbserial
+.SH "SEE ALSO"
+.BR tty (4),
+.BR ttys (4),
+kernel/chr_drv/serial.c
+.SH AUTHOR
+The original version of setserial was written by Rick Sladkey
+(jrs@world.std.com), and was modified by Michael K. Johnson
+(johnsonm@stolaf.edu).
+
+This version has since been rewritten from scratch by Theodore Ts'o
+(tytso@mit.edu) on 1/1/93.  Any bugs or problems are solely his
+responsibility.
+
+Added support for BrainBoxes cards, by Marcos Lois 
+(marcos.lois@gmail.com) on 24/10/2007.
