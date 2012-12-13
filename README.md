@@ -1,5 +1,5 @@
-brainboxes
-==========
+BrainBoxes Linux Driver
+=======================
 
 This is a Linux 2.6.x driver for RS485 BrainBroxes PCI Card. The manufacturer also released a Linux driver but stop development at 2.4.25.
 
