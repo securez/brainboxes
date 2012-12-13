@@ -5,7 +5,7 @@ This is a Linux 2.6.x driver for RS485 BrainBroxes PCI Card. The manufacturer al
 
 When us really need migrate customer server to 2.6.x, i decide to port the driver to 2.6.x.
 
-The chip is based on standard pc serial chip 8250 with some obscure modifications, since it change startup process, and add some ioctl for board config, i fork the 8250 PCI driver, i wasn't confortable with mantain a set of patches that i can't mantain for futire versions of linux kernel.
+The chip is based on standard pc serial chip 8250 with some obscure modifications, since it change startup process, and add some ioctl for board config, i fork the 8250 PCI driver, i wasn't confortable with mantain a set of patches that i can't mantain for futire versions of linux kernel, the manufacturer refuse send me any info about some obscure registers so i only enable the 2.4.x present features.
 
 It's tested on Linux kernel up to 2.6.27, this is a old project, :P. before commit to github i tested on 2.3.0 and doesn't compile.
 
